@@ -47,6 +47,7 @@ function readTrial(): { tasks: TrialTask[]; events: TrialEvent[] } {
 
 export default function JKStoryPreview() {
   const [selected, setSelected] = useState(0);
+  const [room, setRoom] = useState<"office" | "executive">("office");
   const [tasks, setTasks] = useState<TrialTask[]>([]);
   const [events, setEvents] = useState<TrialEvent[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -77,7 +78,7 @@ export default function JKStoryPreview() {
     setTasks((previous) => previous.map((item) => item.id === task.id ? { ...item, status, updatedAt: new Date().toISOString() } : item));
     log(`${task.assignee} · ${task.title}: ${task.status} → ${status}`);
   }
-  const map = useMemo(() => buildOfficeEnvironment("trading"), []);
+  const map = useMemo(() => buildOfficeEnvironment(room === "executive" ? "executive" : "trading"), [room]);
   const seats = useMemo(() => {
     const snapshot = tiledSnapshot(map);
     const blocked = new Set(snapshot.blocked);
@@ -85,21 +86,24 @@ export default function JKStoryPreview() {
       snapshot.objects,
       (col, row) => !blocked.has(`${col},${row}`),
       () => false,
-    ).slice(0, STAFF.length + TEAM_MEMBERS.length);
-  }, [map]);
+    ).slice(0, room === "executive" ? 3 : STAFF.length + TEAM_MEMBERS.length);
+  }, [map, room]);
   const actors = useMemo<ActorSnapshot[]>(
-    () => [...STAFF, ...TEAM_MEMBERS].map((member, index) => ({
+    () => (room === "executive" ? [
+      { name: "대표님", look: "office-tae" },
+      { name: "JK 전담비서", look: "office-ha" },
+    ] : [...STAFF, ...TEAM_MEMBERS]).map((member, index) => ({
       id: `jk-preview-${index}`,
       name: member.name,
       kind: "npc",
-      x: ((seats[index]?.col ?? 6 + index * 2) + 0.5) * 32,
-      y: ((seats[index]?.row ?? 7) + 0.5) * 32,
+      x: ((seats[room === "executive" && index === 1 ? 2 : index]?.col ?? 6 + index * 2) + 0.5) * 32,
+      y: ((seats[room === "executive" && index === 1 ? 2 : index]?.row ?? 7) + 0.5) * 32,
       direction: "down",
       walking: false,
       appearance: { officeLookId: member.look },
       phase: "idle",
     })),
-    [seats],
+    [seats, room],
   );
 
   return (
@@ -109,7 +113,10 @@ export default function JKStoryPreview() {
           <h1 className="text-lg font-bold">JK Story Virtual 3D</h1>
           <p className="text-sm text-[#637169]">DeskRPG 기반 AI 사무실 · 시험 배치</p>
         </div>
-        <span className="rounded-full bg-[#e7efe9] px-3 py-1 text-sm text-[#345847]">원본 3D 지도 사용</span>
+        <nav className="flex gap-2" aria-label="사무실 공간 선택">
+          <button type="button" onClick={() => setRoom("office")} aria-pressed={room === "office"} className={`rounded-lg px-3 py-2 text-sm ${room === "office" ? "bg-[#345847] text-white" : "bg-[#e7efe9] text-[#345847]"}`}>운영 사무실</button>
+          <button type="button" onClick={() => setRoom("executive")} aria-pressed={room === "executive"} className={`rounded-lg px-3 py-2 text-sm ${room === "executive" ? "bg-[#345847] text-white" : "bg-[#e7efe9] text-[#345847]"}`}>대표실</button>
+        </nav>
       </header>
       <div className="grid min-h-[640px] flex-1 lg:grid-cols-[240px_minmax(0,1fr)_280px]">
         <aside className="border-r border-[#e2e3dc] bg-[#fffefa] p-4">
@@ -127,20 +134,24 @@ export default function JKStoryPreview() {
           <p className="mt-5 text-xs leading-5 text-[#69776f]">캐릭터는 시험 배치입니다. 업무 상태도 수동 시험 기록이며 AI에게 실제 지시가 전달되지는 않습니다.</p>
         </aside>
         <main className="relative min-h-[520px] bg-[#eeeee7]" aria-label="JKSTORY 3D 사무실 지도">
-          <ThreeMapPreview map={map} actors={actors} />
+          <ThreeMapPreview key={room} map={map} actors={actors} />
           <div className="pointer-events-none absolute left-4 top-4 rounded-lg border border-[#e3e2d9] bg-[#fffefa]/95 px-3 py-2 shadow-sm">
-            <strong className="text-sm">JKSTORY AI 협업실</strong>
-            <div className="text-xs text-[#67756c]">종합상사 지도 · 회의 공간 · 개인 업무석</div>
+            <strong className="text-sm">{room === "executive" ? "JKSTORY 대표실" : "JKSTORY AI 협업실"}</strong>
+            <div className="text-xs text-[#67756c]">{room === "executive" ? "집무 공간 · 응접 공간 · 전담비서" : "운영 사무실 · 회의 공간 · 직원 업무석"}</div>
           </div>
         </main>
         <aside className="border-l border-[#e2e3dc] bg-[#fffefa] p-4">
-          <h2 className="mb-4 font-semibold">직원 정보</h2>
-          <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
+          <h2 className="mb-4 font-semibold">{room === "executive" ? "대표실 안내" : "직원 정보"}</h2>
+          {room === "executive" ? <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
+            <h3 className="text-lg font-bold">대표 집무 공간</h3>
+            <p className="mt-2 text-sm">대표 업무석과 전담비서 대기석을 배치했습니다. 향후 비서 접수함에서 지시와 보고를 확인하는 공간으로 연결합니다.</p>
+            <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">현재는 3D 공간 시험 배치 · 전담비서 자동 연결 대기</p>
+          </div> : <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
             <h3 className="text-lg font-bold">{STAFF[selected].name}</h3>
             <p className="mt-2 text-sm">{STAFF[selected].role}</p>
             <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">연결 대기 · 실제 AI 실행 없음</p>
             <p className="mt-3 text-sm">시험 업무 {tasks.filter((task) => task.assignee === STAFF[selected].name).length}건</p>
-          </div>
+          </div>}
           <p className="mt-5 text-xs leading-5 text-[#69776f]">지도 확대·축소와 회전으로 공간을 살펴볼 수 있습니다. 이 화면은 기존 운영 데이터에 접속하지 않습니다.</p>
         </aside>
       </div>
