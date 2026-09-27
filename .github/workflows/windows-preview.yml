@@ -44,3 +44,28 @@ jobs:
           } finally {
             Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
           }
+      - name: Capture 3D office in browser
+        shell: pwsh
+        working-directory: .runtime/deskrpg
+        run: |
+          npx playwright install chromium
+          $server = Start-Process node -ArgumentList '--import','tsx','dev-server.ts' -PassThru -NoNewWindow
+          try {
+            for ($attempt = 0; $attempt -lt 30; $attempt++) {
+              Start-Sleep -Seconds 2
+              try {
+                $response = Invoke-WebRequest 'http://localhost:3000/jkstory-preview' -TimeoutSec 5
+                if ($response.StatusCode -eq 200) { break }
+              } catch {}
+            }
+            node scripts/capture-jkstory-preview.mjs
+          } finally {
+            Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+          }
+      - name: Save screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jkstory-3d-office-screenshot
+          path: .runtime/deskrpg/test-results/jkstory-preview.png
+          if-no-files-found: ignore
