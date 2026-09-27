@@ -3,6 +3,7 @@
 DeskRPG의 실제 3D 지도와 캐릭터 렌더러를 기반으로 만드는 JKSTORY AI 사무실입니다.
 
 전담비서·Codex·Claude Code·Hermes의 업무 책임과 단계는 [핵심 운영팀 설계안](docs/OPERATING_TEAM.md)에 정리했습니다.
+첫 직원 7명의 직책과 보고선은 [직원 채용·배치안](docs/STAFFING_PLAN.md)에 정리했습니다.
 
 ## 현재 제공하는 화면
 
