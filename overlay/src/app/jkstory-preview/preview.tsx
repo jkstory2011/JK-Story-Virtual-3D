@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { buildOfficeEnvironment } from "@/game/three/office-environments";
 import { tiledSnapshot } from "@/game/three/tiled-preview";
 import { deskSeatLabels } from "@/game/three/seating";
@@ -15,8 +15,59 @@ const STAFF = [
   { name: "Hermes", role: "직원 실행 · 일정 · 작업 상태", look: "office-do" },
 ] as const;
 
+type TaskStatus = "대기" | "진행" | "검토" | "완료";
+type TrialTask = { id: string; title: string; assignee: string; status: TaskStatus; updatedAt: string };
+type TrialEvent = { id: string; message: string; at: string };
+const STORAGE_KEY = "jkstory-virtual-3d-trial-v1";
+const STATUSES: TaskStatus[] = ["대기", "진행", "검토", "완료"];
+
+function readTrial(): { tasks: TrialTask[]; events: TrialEvent[] } {
+  try {
+    const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    return {
+      tasks: Array.isArray(value.tasks) ? value.tasks.filter((task: TrialTask) =>
+        task && typeof task.id === "string" && typeof task.title === "string" &&
+        STAFF.some((member) => member.name === task.assignee) && STATUSES.includes(task.status)) : [],
+      events: Array.isArray(value.events) ? value.events.filter((event: TrialEvent) =>
+        event && typeof event.message === "string" && typeof event.at === "string").slice(0, 30) : [],
+    };
+  } catch {
+    return { tasks: [], events: [] };
+  }
+}
+
 export default function JKStoryPreview() {
   const [selected, setSelected] = useState(0);
+  const [tasks, setTasks] = useState<TrialTask[]>([]);
+  const [events, setEvents] = useState<TrialEvent[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [title, setTitle] = useState("");
+  const [assignee, setAssignee] = useState<string>(STAFF[0].name);
+  useEffect(() => {
+    const trial = readTrial();
+    setTasks(trial.tasks);
+    setEvents(trial.events);
+    setLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, events }));
+  }, [tasks, events, loaded]);
+  function log(message: string) {
+    setEvents((previous) => [{ id: crypto.randomUUID(), message, at: new Date().toISOString() }, ...previous].slice(0, 30));
+  }
+  function addTask(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmed = title.trim();
+    if (!trimmed || trimmed.length > 120) return;
+    setTasks((previous) => [{ id: crypto.randomUUID(), title: trimmed, assignee, status: "대기", updatedAt: new Date().toISOString() }, ...previous]);
+    log(`${assignee}에게 업무 등록: ${trimmed}`);
+    setTitle("");
+  }
+  function changeStatus(task: TrialTask, status: TaskStatus) {
+    if (task.status === status) return;
+    setTasks((previous) => previous.map((item) => item.id === task.id ? { ...item, status, updatedAt: new Date().toISOString() } : item));
+    log(`${task.assignee} · ${task.title}: ${task.status} → ${status}`);
+  }
   const map = useMemo(() => buildOfficeEnvironment("trading"), []);
   const seats = useMemo(() => {
     const snapshot = tiledSnapshot(map);
@@ -64,7 +115,7 @@ export default function JKStoryPreview() {
               </button>
             ))}
           </div>
-          <p className="mt-5 text-xs leading-5 text-[#69776f]">캐릭터는 시험 배치입니다. 실제 직원 등록과 업무 수행에는 Hermes 프로필 연결이 필요합니다.</p>
+          <p className="mt-5 text-xs leading-5 text-[#69776f]">캐릭터는 시험 배치입니다. 업무 상태도 수동 시험 기록이며 AI에게 실제 지시가 전달되지는 않습니다.</p>
         </aside>
         <main className="relative min-h-[520px] bg-[#eeeee7]" aria-label="JKSTORY 3D 사무실 지도">
           <ThreeMapPreview map={map} actors={actors} />
@@ -78,11 +129,43 @@ export default function JKStoryPreview() {
           <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
             <h3 className="text-lg font-bold">{STAFF[selected].name}</h3>
             <p className="mt-2 text-sm">{STAFF[selected].role}</p>
-            <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">연결 대기 · 실제 업무 지시와 상태 표시 준비 중</p>
+            <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">연결 대기 · 실제 AI 실행 없음</p>
+            <p className="mt-3 text-sm">시험 업무 {tasks.filter((task) => task.assignee === STAFF[selected].name).length}건</p>
           </div>
           <p className="mt-5 text-xs leading-5 text-[#69776f]">지도 확대·축소와 회전으로 공간을 살펴볼 수 있습니다. 이 화면은 기존 운영 데이터에 접속하지 않습니다.</p>
         </aside>
       </div>
+      <section className="border-t border-[#dddcd4] bg-[#fffefa] px-5 py-6" aria-label="시험운영 업무판">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-lg font-bold">JKSTORY 시험운영 업무판</h2>
+          <p className="mt-1 text-sm text-[#637169]">업무 흐름을 수동으로 검증합니다. 기록은 이 브라우저에만 저장되며 다른 기기와 공유되지 않습니다. 고객 정보는 입력하지 마세요.</p>
+          <form onSubmit={addTask} className="mt-4 flex flex-wrap gap-2">
+            <label className="sr-only" htmlFor="trial-title">시험 업무명</label>
+            <input id="trial-title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} required placeholder="예: 출고 요청 접수 흐름 확인" className="min-w-[220px] flex-1 rounded-lg border border-[#cfd8cf] bg-white px-3 py-2 text-sm" />
+            <label className="sr-only" htmlFor="trial-assignee">담당 AI</label>
+            <select id="trial-assignee" value={assignee} onChange={(event) => setAssignee(event.target.value)} className="rounded-lg border border-[#cfd8cf] bg-white px-3 py-2 text-sm">
+              {STAFF.map((member) => <option key={member.name}>{member.name}</option>)}
+            </select>
+            <button type="submit" className="rounded-lg bg-[#345847] px-4 py-2 text-sm font-semibold text-white">시험 업무 등록</button>
+          </form>
+          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
+            <div>
+              <h3 className="font-semibold">업무 목록 ({tasks.length})</h3>
+              {tasks.length === 0 ? <p className="mt-3 rounded-lg border border-dashed border-[#cfd8cf] p-5 text-sm">첫 시험 업무를 등록해 담당자와 상태 변경 흐름을 확인하세요.</p> :
+                <ul className="mt-3 space-y-2">{tasks.map((task) => <li key={task.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-[#e0e6dc] bg-white p-3">
+                  <div className="min-w-[180px] flex-1"><strong className="block text-sm">{task.title}</strong><span className="text-xs text-[#637169]">{task.assignee} · {new Date(task.updatedAt).toLocaleString("ko-KR")}</span></div>
+                  <label className="sr-only" htmlFor={`status-${task.id}`}>{task.title} 상태</label>
+                  <select id={`status-${task.id}`} value={task.status} onChange={(event) => changeStatus(task, event.target.value as TaskStatus)} className="rounded-md border border-[#cfd8cf] bg-white px-2 py-1 text-sm">
+                    {STATUSES.map((status) => <option key={status}>{status}</option>)}
+                  </select>
+                </li>)}</ul>}
+            </div>
+            <div><h3 className="font-semibold">변경 기록</h3><ol className="mt-3 max-h-64 space-y-2 overflow-y-auto text-xs text-[#52645a]" aria-live="polite">
+              {events.map((event) => <li key={event.id} className="rounded-lg bg-[#f3f5ef] p-2"><time dateTime={event.at}>{new Date(event.at).toLocaleString("ko-KR")}</time><p className="mt-1 break-words">{event.message}</p></li>)}
+            </ol></div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
