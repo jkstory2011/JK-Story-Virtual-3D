@@ -23,6 +23,10 @@ const TEAM_MEMBERS = [
   { id: "COORD-01", name: "업무 배정관", team: "Hermes 팀", duty: "대기열 · 일정 · 재시도", look: "office-jun" },
   { id: "MON-01", name: "운영 모니터", team: "Hermes 팀", duty: "실행 로그 · 실패 감지", look: "office-min" },
 ] as const;
+const SECRETARY_ROUTE = [
+  [11, 16], [10, 16], [9, 16], [9, 15], [8, 15],
+  [7, 15], [6, 15], [5, 15], [4, 15],
+] as const;
 
 type TaskStatus = "대기" | "진행" | "검토" | "완료";
 type TrialTask = { id: string; title: string; assignee: string; status: TaskStatus; updatedAt: string };
@@ -48,6 +52,8 @@ function readTrial(): { tasks: TrialTask[]; events: TrialEvent[] } {
 export default function JKStoryPreview() {
   const [selected, setSelected] = useState(0);
   const [focus, setFocus] = useState<"overview" | "executive">("overview");
+  const [secretaryStep, setSecretaryStep] = useState(0);
+  const [secretaryTarget, setSecretaryTarget] = useState(0);
   const [tasks, setTasks] = useState<TrialTask[]>([]);
   const [events, setEvents] = useState<TrialEvent[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -62,6 +68,13 @@ export default function JKStoryPreview() {
   useEffect(() => {
     if (loaded) localStorage.setItem(STORAGE_KEY, JSON.stringify({ tasks, events }));
   }, [tasks, events, loaded]);
+  useEffect(() => {
+    if (secretaryStep === secretaryTarget) return;
+    const timer = window.setInterval(() => {
+      setSecretaryStep((step) => step === secretaryTarget ? step : step + Math.sign(secretaryTarget - step));
+    }, 220);
+    return () => window.clearInterval(timer);
+  }, [secretaryStep, secretaryTarget]);
   function log(message: string) {
     setEvents((previous) => [{ id: crypto.randomUUID(), message, at: new Date().toISOString() }, ...previous].slice(0, 30));
   }
@@ -96,18 +109,19 @@ export default function JKStoryPreview() {
         seat: member.name === "JK 전담비서"
           ? seats.find((seat) => seat.col === 11 && seat.row === 16)
           : seats[index],
+        secretary: member.name === "JK 전담비서",
       }))].map((member, index) => ({
       id: `jk-preview-${index}`,
       name: member.name,
       kind: "npc",
-      x: ((member.seat?.col ?? 6 + index * 2) + 0.5) * 32,
-      y: ((member.seat?.row ?? 7) + 0.5) * 32,
+      x: (("secretary" in member && member.secretary ? SECRETARY_ROUTE[secretaryStep][0] : member.seat?.col ?? 6 + index * 2) + 0.5) * 32,
+      y: (("secretary" in member && member.secretary ? SECRETARY_ROUTE[secretaryStep][1] : member.seat?.row ?? 7) + 0.5) * 32,
       direction: "down",
-      walking: false,
+      walking: "secretary" in member && member.secretary && secretaryStep !== secretaryTarget,
       appearance: { officeLookId: member.look },
       phase: "idle",
     })),
-    [seats],
+    [seats, secretaryStep, secretaryTarget],
   );
 
   return (
@@ -149,7 +163,9 @@ export default function JKStoryPreview() {
           {focus === "executive" ? <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
             <h3 className="text-lg font-bold">대표 집무 공간</h3>
             <p className="mt-2 text-sm">대표실은 운영 사무실 왼쪽에 있습니다. 열린 출입구를 통해 같은 3D 공간에서 드나들 수 있는 배치입니다.</p>
-            <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">현재는 연결된 공간과 직원의 시험 배치 · 실제 직원 이동과 비서 업무 연결은 준비 중</p>
+            <button type="button" disabled={secretaryStep !== secretaryTarget} onClick={() => setSecretaryTarget(secretaryStep === 0 ? SECRETARY_ROUTE.length - 1 : 0)} className="mt-3 rounded-lg bg-[#345847] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{secretaryStep === 0 ? "전담비서 대표실 호출" : "전담비서 사무실 복귀"}</button>
+            <p className="mt-2 text-xs text-[#637169]">같은 지도의 열린 출입구를 따라 이동하는 시험 동작입니다. AI 업무 실행은 아닙니다.</p>
+            <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">현재는 직원 이동 시연 · 실제 비서 업무 연결 대기</p>
           </div> : <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
             <h3 className="text-lg font-bold">{STAFF[selected].name}</h3>
             <p className="mt-2 text-sm">{STAFF[selected].role}</p>
