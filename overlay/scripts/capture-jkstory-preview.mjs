@@ -1,5 +1,5 @@
 import { chromium } from "playwright";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 
 const browser = await chromium.launch({
   headless: true,
@@ -15,7 +15,12 @@ try {
     throw new Error("The office renderer reported that WebGL is unavailable.");
   }
   await mkdir("test-results", { recursive: true });
-  await page.screenshot({ path: "test-results/jkstory-preview.png", fullPage: true });
+  const cdp = await page.context().newCDPSession(page);
+  const capture = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile("test-results/jkstory-preview.png", Buffer.from(capture.data, "base64"));
   console.log("Captured JKSTORY office screenshot.");
 } finally {
   await browser.close();
