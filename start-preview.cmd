@@ -29,8 +29,8 @@ if not exist ".env.local" (
 )
 
 echo [JKSTORY] Starting the office at http://localhost:3000/jkstory-preview
-echo [JKSTORY] The browser opens automatically. Keep this window open.
-start "" "http://localhost:3000/jkstory-preview"
+echo [JKSTORY] The browser will open when the server is ready. Keep this window open.
+start "" /min powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\open-preview.ps1"
 node --import tsx dev-server.ts
 if errorlevel 1 goto failed
 exit /b 0
