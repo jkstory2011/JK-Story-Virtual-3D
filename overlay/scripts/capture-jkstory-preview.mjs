@@ -43,6 +43,8 @@ try {
   if (await page.locator("canvas").first().getAttribute("data-preview-test-id") !== "persistent") {
     throw new Error("Room switching recreated the WebGL canvas.");
   }
+  await page.getByRole("button", { name: "전담비서 대표실 호출" }).click();
+  await page.getByRole("button", { name: "전담비서 사무실 복귀" }).waitFor({ timeout: 10000 });
   await page.waitForTimeout(1200);
   const suite = await cdp.send("Page.captureScreenshot", {
     format: "png",
