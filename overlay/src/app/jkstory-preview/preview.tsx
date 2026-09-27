@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { buildOfficeEnvironment } from "@/game/three/office-environments";
+import { buildJKStoryOffice } from "./executive-room";
 import { tiledSnapshot } from "@/game/three/tiled-preview";
 import { deskSeatLabels } from "@/game/three/seating";
 import type { ActorSnapshot } from "@/game/three/bridge";
@@ -24,8 +24,10 @@ const TEAM_MEMBERS = [
   { id: "MON-01", name: "운영 모니터", team: "Hermes 팀", duty: "실행 로그 · 실패 감지", look: "office-min" },
 ] as const;
 const SECRETARY_ROUTE = [
-  [11, 16], [10, 16], [9, 16], [9, 15], [8, 15],
-  [7, 15], [6, 15], [5, 15], [4, 15],
+  [11, 16], [12, 17], [13, 17], [14, 17], [15, 17],
+  [16, 17], [17, 17], [18, 17], [19, 17], [20, 17],
+  [21, 17], [21, 18], [21, 19], [21, 20], [21, 21],
+  [20, 22], [20, 23], [20, 24],
 ] as const;
 
 type TaskStatus = "대기" | "진행" | "검토" | "완료";
@@ -91,7 +93,7 @@ export default function JKStoryPreview() {
     setTasks((previous) => previous.map((item) => item.id === task.id ? { ...item, status, updatedAt: new Date().toISOString() } : item));
     log(`${task.assignee} · ${task.title}: ${task.status} → ${status}`);
   }
-  const map = useMemo(() => buildOfficeEnvironment("trading"), []);
+  const map = useMemo(() => buildJKStoryOffice(), []);
   const seats = useMemo(() => {
     const snapshot = tiledSnapshot(map);
     const blocked = new Set(snapshot.blocked);
@@ -102,7 +104,7 @@ export default function JKStoryPreview() {
     );
   }, [map]);
   const actors = useMemo<ActorSnapshot[]>(
-    () => [{ name: "대표님", look: "office-tae", seat: seats.find((seat) => seat.col === 3 && seat.row === 14) },
+    () => [{ name: "대표님", look: "office-tae", seat: { col: 21, row: 24 } },
       ...[...STAFF, ...TEAM_MEMBERS].map((member, index) => ({
         name: member.name,
         look: member.look,
@@ -155,14 +157,14 @@ export default function JKStoryPreview() {
           <ThreeMapPreview map={map} actors={actors} focus={focus} />
           <div className="pointer-events-none absolute left-4 top-4 rounded-lg border border-[#e3e2d9] bg-[#fffefa]/95 px-3 py-2 shadow-sm">
             <strong className="text-sm">{focus === "executive" ? "JKSTORY 대표실 · 운영 사무실과 연결" : "JKSTORY AI 협업실"}</strong>
-            <div className="text-xs text-[#67756c]">{focus === "executive" ? "왼쪽 내부 공간 · 오른쪽 출입구로 직원 동선 연결" : "운영 사무실 · 회의 공간 · 대표실 · 직원 업무석"}</div>
+            <div className="text-xs text-[#67756c]">{focus === "executive" ? "앞쪽 중앙 대표실 · 운영 사무실에서 출입 가능" : "운영 사무실 · 회의 공간 · 대표실 · 직원 업무석"}</div>
           </div>
         </main>
         <aside className="border-l border-[#e2e3dc] bg-[#fffefa] p-4">
           <h2 className="mb-4 font-semibold">{focus === "executive" ? "대표실 안내" : "직원 정보"}</h2>
           {focus === "executive" ? <div className="rounded-xl border border-[#e0e6dc] bg-white p-4">
             <h3 className="text-lg font-bold">대표 집무 공간</h3>
-            <p className="mt-2 text-sm">대표실은 운영 사무실 왼쪽에 있습니다. 열린 출입구를 통해 같은 3D 공간에서 드나들 수 있는 배치입니다.</p>
+            <p className="mt-2 text-sm">대표실은 운영 사무실 앞쪽 중앙 공간에 있습니다. 열린 출입구를 통해 같은 3D 공간에서 드나들 수 있습니다.</p>
             <button type="button" disabled={secretaryStep !== secretaryTarget} onClick={() => setSecretaryTarget(secretaryStep === 0 ? SECRETARY_ROUTE.length - 1 : 0)} className="mt-3 rounded-lg bg-[#345847] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{secretaryStep === 0 ? "전담비서 대표실 호출" : "전담비서 사무실 복귀"}</button>
             <p className="mt-2 text-xs text-[#637169]">같은 지도의 열린 출입구를 따라 이동하는 시험 동작입니다. AI 업무 실행은 아닙니다.</p>
             <p className="mt-4 rounded-md bg-[#f5f2e9] p-3 text-xs leading-5 text-[#786b4e]">현재는 직원 이동 시연 · 실제 비서 업무 연결 대기</p>
