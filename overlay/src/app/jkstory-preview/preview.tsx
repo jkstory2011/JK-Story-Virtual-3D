@@ -14,6 +14,15 @@ const STAFF = [
   { name: "Claude Code", role: "코드 개발 · 테스트", look: "office-min" },
   { name: "Hermes", role: "직원 실행 · 일정 · 작업 상태", look: "office-do" },
 ] as const;
+const TEAM_MEMBERS = [
+  { id: "SEC-01", name: "JK 전담비서", team: "대표 직속", duty: "지시 접수 · 배정 · 결과 보고" },
+  { id: "OPS-01", name: "업무 분석관", team: "Codex 팀", duty: "업무 흐름 · 수용 기준" },
+  { id: "QA-01", name: "품질 검증관", team: "Codex 팀", duty: "원본 대조 · 결과 검증" },
+  { id: "DEV-01", name: "화면 개발자", team: "Claude Code 팀", duty: "3D · 웹 · PDA 화면" },
+  { id: "INT-01", name: "연동 개발자", team: "Claude Code 팀", duty: "API · 저장소 · 인증" },
+  { id: "COORD-01", name: "업무 배정관", team: "Hermes 팀", duty: "대기열 · 일정 · 재시도" },
+  { id: "MON-01", name: "운영 모니터", team: "Hermes 팀", duty: "실행 로그 · 실패 감지" },
+] as const;
 
 type TaskStatus = "대기" | "진행" | "검토" | "완료";
 type TrialTask = { id: string; title: string; assignee: string; status: TaskStatus; updatedAt: string };
@@ -135,6 +144,20 @@ export default function JKStoryPreview() {
           <p className="mt-5 text-xs leading-5 text-[#69776f]">지도 확대·축소와 회전으로 공간을 살펴볼 수 있습니다. 이 화면은 기존 운영 데이터에 접속하지 않습니다.</p>
         </aside>
       </div>
+      <section className="border-t border-[#dddcd4] bg-[#f7f6f1] px-5 py-6" aria-label="가상 직원 배치표">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-lg font-bold">가상 직원 배치표</h2>
+          <p className="mt-1 text-sm text-[#637169]">전담비서 1명 · 핵심 운영팀 산하 실무 직원 6명. 현재는 역할 프로필이며 자동 실행 연결 대기 중입니다.</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {TEAM_MEMBERS.map((member) => <article key={member.id} className="rounded-xl border border-[#e0e6dc] bg-white p-4">
+              <div className="flex items-center justify-between gap-2"><span className="text-xs font-semibold text-[#608f74]">{member.id}</span><span className="rounded-full bg-[#f5f2e9] px-2 py-1 text-[11px] text-[#786b4e]">연결 대기</span></div>
+              <h3 className="mt-2 font-bold">{member.name}</h3>
+              <p className="mt-1 text-xs text-[#637169]">{member.team}</p>
+              <p className="mt-3 text-sm">{member.duty}</p>
+            </article>)}
+          </div>
+        </div>
+      </section>
       <section className="border-t border-[#dddcd4] bg-[#fffefa] px-5 py-6" aria-label="시험운영 업무판">
         <div className="mx-auto max-w-6xl">
           <h2 className="text-lg font-bold">JKSTORY 시험운영 업무판</h2>
