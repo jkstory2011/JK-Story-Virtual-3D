@@ -1,0 +1,46 @@
+name: Windows preview check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  preview:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Assemble DeskRPG and JKSTORY preview
+        shell: cmd
+        run: scripts\bootstrap.cmd
+      - name: Set up SQLite and check types
+        shell: cmd
+        working-directory: .runtime/deskrpg
+        run: |
+          npm run setup:lite
+          npm run typecheck
+      - name: Verify preview HTTP response
+        shell: pwsh
+        working-directory: .runtime/deskrpg
+        run: |
+          $server = Start-Process node -ArgumentList '--import','tsx','dev-server.ts' -PassThru -NoNewWindow
+          try {
+            $ready = $false
+            for ($attempt = 0; $attempt -lt 60; $attempt++) {
+              Start-Sleep -Seconds 2
+              try {
+                $response = Invoke-WebRequest 'http://localhost:3000/jkstory-preview' -TimeoutSec 5
+                if ($response.StatusCode -eq 200 -and $response.Content -match 'JK Story Virtual 3D') {
+                  $ready = $true
+                  break
+                }
+              } catch {}
+            }
+            if (-not $ready) { throw 'Preview did not return the expected page.' }
+          } finally {
+            Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue
+          }
