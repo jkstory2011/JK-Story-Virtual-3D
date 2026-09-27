@@ -28,6 +28,14 @@ try {
     captureBeyondViewport: false,
   });
   await writeFile("test-results/jkstory-preview.png", Buffer.from(capture.data, "base64"));
+  await page.getByRole("button", { name: "대표실" }).click();
+  await page.getByText("JKSTORY 대표실").waitFor();
+  await page.waitForTimeout(1200);
+  const suite = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    captureBeyondViewport: false,
+  });
+  await writeFile("test-results/jkstory-executive-suite.png", Buffer.from(suite.data, "base64"));
   console.log("Captured JKSTORY office screenshot.");
 } finally {
   await browser.close();
