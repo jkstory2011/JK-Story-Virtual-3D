@@ -10,7 +10,7 @@ DeskRPG의 실제 3D 지도와 캐릭터 렌더러를 기반으로 만드는 JKS
 
 ## Windows PC에서 로컬 시험
 
-1. [Node.js LTS](https://nodejs.org/en/download)와 [Git for Windows](https://git-scm.com/install/windows)를 설치하고 **명령 프롬프트를 새로 엽니다**.
+1. [Node.js 22 LTS](https://nodejs.org/en/download)와 [Git for Windows](https://git-scm.com/install/windows)를 설치하고 **명령 프롬프트를 새로 엽니다**.
 2. 다음 명령을 명령 프롬프트(CMD)에 한 줄씩 입력합니다. `C:\JKStory` 폴더가 만들어지며, 긴 경로 문제를 줄이기 위해 이 위치를 사용합니다.
 
 ```bat
