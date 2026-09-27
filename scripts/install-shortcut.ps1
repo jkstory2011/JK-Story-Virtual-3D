@@ -1,6 +1,12 @@
 param([string]$ProjectDir)
 
 $ErrorActionPreference = 'Stop'
+# The launcher can be replaced by git pull while a batch file is running.
+# Derive the repository path from this script if its argument was lost.
+if ([string]::IsNullOrWhiteSpace($ProjectDir)) {
+  $ProjectDir = Split-Path -Parent $PSScriptRoot
+}
+$ProjectDir = [System.IO.Path]::GetFullPath($ProjectDir)
 $launcher = Join-Path $ProjectDir 'start-preview.cmd'
 if (-not (Test-Path -LiteralPath $launcher)) { throw "Launcher not found: $launcher" }
 
