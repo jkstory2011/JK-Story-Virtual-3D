@@ -16,13 +16,7 @@ if errorlevel 1 goto failed
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-shortcut.ps1" -ProjectDir "%PROJECT_DIR%"
 if errorlevel 1 echo [JKSTORY] Shortcut creation failed. You can still run this file.
 
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\is-preview-running.ps1" >nul 2>nul
-if not errorlevel 1 (
-  echo [JKSTORY] The office is already running. Opening the browser.
-  start "" "http://127.0.0.1:3000/jkstory-preview"
-  exit /b 0
-)
-
+echo [JKSTORY] Applying the latest 3D office files...
 if not exist ".runtime\deskrpg\node_modules" (
   echo [JKSTORY] Installing the 3D office. The first run may take several minutes.
   call scripts\bootstrap.cmd
@@ -30,6 +24,13 @@ if not exist ".runtime\deskrpg\node_modules" (
 ) else (
   xcopy "overlay\*" ".runtime\deskrpg\" /E /I /Y >nul
   if errorlevel 1 goto failed
+)
+
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\is-preview-running.ps1" >nul 2>nul
+if not errorlevel 1 (
+  echo [JKSTORY] The updated office is already running. Opening the browser.
+  start "" "http://127.0.0.1:3000/jkstory-preview"
+  exit /b 0
 )
 
 cd /d ".runtime\deskrpg"
