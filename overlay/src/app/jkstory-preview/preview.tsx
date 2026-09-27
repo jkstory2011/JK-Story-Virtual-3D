@@ -15,13 +15,13 @@ const STAFF = [
   { name: "Hermes", role: "직원 실행 · 일정 · 작업 상태", look: "office-do" },
 ] as const;
 const TEAM_MEMBERS = [
-  { id: "SEC-01", name: "JK 전담비서", team: "대표 직속", duty: "지시 접수 · 배정 · 결과 보고" },
-  { id: "OPS-01", name: "업무 분석관", team: "Codex 팀", duty: "업무 흐름 · 수용 기준" },
-  { id: "QA-01", name: "품질 검증관", team: "Codex 팀", duty: "원본 대조 · 결과 검증" },
-  { id: "DEV-01", name: "화면 개발자", team: "Claude Code 팀", duty: "3D · 웹 · PDA 화면" },
-  { id: "INT-01", name: "연동 개발자", team: "Claude Code 팀", duty: "API · 저장소 · 인증" },
-  { id: "COORD-01", name: "업무 배정관", team: "Hermes 팀", duty: "대기열 · 일정 · 재시도" },
-  { id: "MON-01", name: "운영 모니터", team: "Hermes 팀", duty: "실행 로그 · 실패 감지" },
+  { id: "SEC-01", name: "JK 전담비서", team: "대표 직속", duty: "지시 접수 · 배정 · 결과 보고", look: "office-ha" },
+  { id: "OPS-01", name: "업무 분석관", team: "Codex 팀", duty: "업무 흐름 · 수용 기준", look: "office-jun" },
+  { id: "QA-01", name: "품질 검증관", team: "Codex 팀", duty: "원본 대조 · 결과 검증", look: "office-min" },
+  { id: "DEV-01", name: "화면 개발자", team: "Claude Code 팀", duty: "3D · 웹 · PDA 화면", look: "office-do" },
+  { id: "INT-01", name: "연동 개발자", team: "Claude Code 팀", duty: "API · 저장소 · 인증", look: "office-ha" },
+  { id: "COORD-01", name: "업무 배정관", team: "Hermes 팀", duty: "대기열 · 일정 · 재시도", look: "office-jun" },
+  { id: "MON-01", name: "운영 모니터", team: "Hermes 팀", duty: "실행 로그 · 실패 감지", look: "office-min" },
 ] as const;
 
 type TaskStatus = "대기" | "진행" | "검토" | "완료";
@@ -85,14 +85,14 @@ export default function JKStoryPreview() {
       snapshot.objects,
       (col, row) => !blocked.has(`${col},${row}`),
       () => false,
-    ).slice(0, STAFF.length);
+    ).slice(0, STAFF.length + TEAM_MEMBERS.length);
   }, [map]);
   const actors = useMemo<ActorSnapshot[]>(
-    () => STAFF.map((member, index) => ({
+    () => [...STAFF, ...TEAM_MEMBERS].map((member, index) => ({
       id: `jk-preview-${index}`,
       name: member.name,
       kind: "npc",
-      x: ((seats[index]?.col ?? 6 + index * 3) + 0.5) * 32,
+      x: ((seats[index]?.col ?? 6 + index * 2) + 0.5) * 32,
       y: ((seats[index]?.row ?? 7) + 0.5) * 32,
       direction: "down",
       walking: false,
