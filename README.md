@@ -16,17 +16,19 @@ DeskRPG의 실제 3D 지도와 캐릭터 렌더러를 기반으로 만드는 JKS
 ## Windows PC에서 로컬 시험
 
 1. [Node.js 22 LTS](https://nodejs.org/en/download)와 [Git for Windows](https://git-scm.com/install/windows)를 설치하고 **명령 프롬프트를 새로 엽니다**.
-2. 처음 한 번만 아래 명령으로 저장소를 받습니다. `C:\JKStory` 폴더를 사용해 긴 경로 문제를 줄입니다.
+2. 처음 한 번만 아래 명령으로 저장소를 받습니다. Windows 재설치와 분리해 보관할 수 있도록 `G:\JKStory` 폴더를 사용합니다. G: 드라이브가 연결되어 있어야 합니다.
 
 ```bat
-cd /d C:\
+cd /d G:\
 mkdir JKStory
 cd JKStory
 git clone https://github.com/jkstory2011/JK-Story-Virtual-3D.git
 cd JK-Story-Virtual-3D
 ```
 
-3. `C:\JKStory\JK-Story-Virtual-3D\start-preview.cmd`를 더블클릭합니다. 최신 코드 받기, 최초 설치, 로컬 DB 준비, 서버 실행과 브라우저 열기를 처리합니다. 처음 실행은 설치 시간이 걸립니다. 브라우저가 서버보다 먼저 열려 오류가 보이면 몇 초 뒤 새로고침하세요.
+3. `G:\JKStory\JK-Story-Virtual-3D\start-preview.cmd`를 더블클릭합니다. 최신 코드 받기, 최초 설치, 로컬 DB 준비, 서버 실행과 브라우저 열기를 처리합니다. 처음 실행은 설치 시간이 걸립니다. 브라우저가 서버보다 먼저 열려 오류가 보이면 몇 초 뒤 새로고침하세요.
+
+이미 `C:\JKStory\JK-Story-Virtual-3D`에 설치했다면 실행 창을 닫고 파일 탐색기에서 `JK-Story-Virtual-3D` 폴더 전체를 `G:\JKStory\`로 이동한 뒤 G: 드라이브의 `start-preview.cmd`를 실행합니다. 시작 파일과 설치 스크립트는 자신의 위치를 기준으로 경로를 찾으므로 코드 수정은 필요하지 않습니다. 다만 업무판 시험 기록은 브라우저에 저장되어 Windows를 재설치하면 사라질 수 있습니다.
 
 화면 주소는 `http://localhost:3000/jkstory-preview`입니다. 실행 창을 열어 둔 동안만 접속됩니다. 중지하려면 실행 창에서 `Ctrl+C`를 누릅니다. GitHub에 수정된 코드를 반영한 뒤에는 실행 창을 닫고 `start-preview.cmd`를 다시 더블클릭하면 최신 버전을 받을 수 있습니다. 사용 중인 시험 업무 기록은 같은 브라우저의 로컬 저장소에 남습니다.
 
