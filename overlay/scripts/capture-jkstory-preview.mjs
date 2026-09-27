@@ -11,6 +11,15 @@ try {
   await page.getByRole("heading", { name: "JK Story Virtual 3D" }).waitFor();
   await page.locator("canvas").first().waitFor();
   await page.waitForTimeout(3000);
+  const label = page.locator(".office-actor-label").first();
+  await label.waitFor();
+  const labelStyle = await label.evaluate((element) => ({
+    position: getComputedStyle(element).position,
+    background: getComputedStyle(element.querySelector(".office-actor-name")).backgroundColor,
+  }));
+  if (labelStyle.position !== "absolute" || labelStyle.background === "rgba(0, 0, 0, 0)") {
+    throw new Error(`3D actor label styles are missing: ${JSON.stringify(labelStyle)}`);
+  }
   if (await page.getByText("WebGL", { exact: false }).count()) {
     throw new Error("The office renderer reported that WebGL is unavailable.");
   }
