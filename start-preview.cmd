@@ -1,6 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
+for %%I in ("%~dp0.") do set "PROJECT_DIR=%%~fI"
 title JK Story Virtual 3D - Preview
 
 where node >nul 2>nul
@@ -11,6 +12,16 @@ if errorlevel 1 goto missing_git
 echo [JKSTORY] Getting the latest project files...
 git pull --ff-only
 if errorlevel 1 goto failed
+
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-shortcut.ps1" -ProjectDir "%PROJECT_DIR%"
+if errorlevel 1 echo [JKSTORY] Shortcut creation failed. You can still run this file.
+
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\is-preview-running.ps1" >nul 2>nul
+if not errorlevel 1 (
+  echo [JKSTORY] The office is already running. Opening the browser.
+  start "" "http://127.0.0.1:3000/jkstory-preview"
+  exit /b 0
+)
 
 if not exist ".runtime\deskrpg\node_modules" (
   echo [JKSTORY] Installing the 3D office. The first run may take several minutes.
