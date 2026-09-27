@@ -6,7 +6,7 @@ const browser = await chromium.launch({
   args: ["--enable-webgl", "--use-gl=angle", "--use-angle=swiftshader"],
 });
 try {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1200 }, deviceScaleFactor: 1 });
   await page.goto("http://localhost:3000/jkstory-preview", { waitUntil: "networkidle" });
   await page.getByRole("heading", { name: "JK Story Virtual 3D" }).waitFor();
   await page.locator("canvas").first().waitFor();
@@ -14,6 +14,13 @@ try {
   if (await page.getByText("WebGL", { exact: false }).count()) {
     throw new Error("The office renderer reported that WebGL is unavailable.");
   }
+  await page.getByLabel("시험 업무명").fill("출고 요청 접수 흐름 확인");
+  await page.getByLabel("담당 AI").selectOption("Hermes");
+  await page.getByRole("button", { name: "시험 업무 등록" }).click();
+  await page.getByLabel("출고 요청 접수 흐름 확인 상태").selectOption("진행");
+  await page.reload({ waitUntil: "networkidle" });
+  const status = await page.getByLabel("출고 요청 접수 흐름 확인 상태").inputValue();
+  if (status !== "진행") throw new Error(`Trial task was not preserved after reload: ${status}`);
   await mkdir("test-results", { recursive: true });
   const cdp = await page.context().newCDPSession(page);
   const capture = await cdp.send("Page.captureScreenshot", {
