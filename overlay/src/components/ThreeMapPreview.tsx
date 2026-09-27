@@ -52,7 +52,7 @@ export default function ThreeMapPreview({ map, actors = [], focus = "overview" }
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
-    if (focus === "executive") view.showRoom(4.5, 14, 17);
+    if (focus === "executive") view.showRoom(22, 24, 17);
     else view.overview(map.width, map.height);
   }, [focus, map]);
   return (
