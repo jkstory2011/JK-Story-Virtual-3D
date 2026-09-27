@@ -34,7 +34,7 @@ if (!fs.existsSync(dataDir)) {
 // 4. Push schema using SQLite config
 console.log("[setup] Applying schema to SQLite...");
 try {
-  execFileSync("npx", ["drizzle-kit", "push", "--config=drizzle-sqlite.config.ts", "--force"], {
+  execFileSync(process.execPath, [path.join(ROOT, "node_modules", "drizzle-kit", "bin.cjs"), "push", "--config=drizzle-sqlite.config.ts", "--force"], {
     cwd: ROOT,
     stdio: "inherit",
     env: { ...process.env, DB_TYPE: "sqlite", SQLITE_PATH: "data/deskrpg.db" },
