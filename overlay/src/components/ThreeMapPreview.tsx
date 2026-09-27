@@ -7,27 +7,35 @@ import type { ActorSnapshot } from "@/game/three/bridge";
 import { useT } from "@/lib/i18n";
 import "@/game/three/office.css";
 
-export default function ThreeMapPreview({ map, actors = [] }: { map: TiledMap; actors?: ActorSnapshot[] }) {
+export default function ThreeMapPreview({ map, actors = [], focus = "overview" }: { map: TiledMap; actors?: ActorSnapshot[]; focus?: "overview" | "executive" }) {
   const host = useRef<HTMLDivElement>(null),
     labels = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<OfficeRenderer | null>(null);
   const [failed, setFailed] = useState(false);
   const t = useT();
   useEffect(() => {
     if (!host.current || !labels.current) return;
-    let view: OfficeRenderer;
     try {
-      view = new OfficeRenderer(host.current, labels.current);
+      viewRef.current = new OfficeRenderer(host.current, labels.current);
     } catch {
       // WebGL capability failure is external state discovered only during allocation.
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setFailed(true);
       return;
     }
+    return () => {
+      viewRef.current?.dispose();
+      viewRef.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
     const snapshot = tiledSnapshot(map);
     const blocked = new Set(snapshot.blocked);
     view.attach({
       actors: () => actors,
-      mapKey: () => "editor-preview",
+      mapKey: () => `jkstory-preview-${map.width}x${map.height}`,
       map: () => snapshot,
       editor: () => ({ placement: false, spawn: false, owner: false, tiled: true, seatLabels: [] }),
       pointer: () => {},
@@ -36,8 +44,13 @@ export default function ThreeMapPreview({ map, actors = [] }: { map: TiledMap; a
         x >= 0 && x < map.width && y >= 0 && y < map.height && !blocked.has(`${x},${y}`),
     });
     view.overview(map.width, map.height);
-    return () => view.dispose();
   }, [map, actors]);
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    if (focus === "executive") view.showRoom(4.5, 14, 17);
+    else view.overview(map.width, map.height);
+  }, [focus, map]);
   return (
     <div className="relative h-full w-full bg-surface-raised">
       <div ref={host} className="office-three-canvas" />
