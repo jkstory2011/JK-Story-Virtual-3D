@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { buildJKStoryOffice } from "./executive-room";
+import { buildJKStoryOffice, TERRACE_OFFSET } from "./executive-room";
 import { tiledSnapshot } from "@/game/three/tiled-preview";
 import { deskSeatLabels } from "@/game/three/seating";
 import type { ActorSnapshot } from "@/game/three/bridge";
@@ -29,6 +29,13 @@ const SECRETARY_ROUTE = [
   [21, 17], [22, 17], [22, 18], [22, 19], [22, 20],
   [22, 21], [21, 21], [20, 22], [20, 23], [20, 24],
 ] as const;
+const WALK_ROUTE: [number, number][] = [[46, 16], [47, 16], [48, 16], [49, 16]];
+for (let row = 15; row >= 2; row--) WALK_ROUTE.push([49, row]);
+for (let col = 48; col >= 2; col--) WALK_ROUTE.push([col, 2]);
+for (let row = 3; row <= 35; row++) WALK_ROUTE.push([2, row]);
+for (let col = 3; col <= 49; col++) WALK_ROUTE.push([col, 35]);
+for (let row = 34; row >= 16; row--) WALK_ROUTE.push([49, row]);
+WALK_ROUTE.push([48, 16], [47, 16], [46, 16]);
 
 type TaskStatus = "대기" | "진행" | "검토" | "완료";
 type TrialTask = { id: string; title: string; assignee: string; status: TaskStatus; updatedAt: string };
@@ -56,6 +63,7 @@ export default function JKStoryPreview() {
   const [focus, setFocus] = useState<"overview" | "executive">("overview");
   const [secretaryStep, setSecretaryStep] = useState(0);
   const [secretaryTarget, setSecretaryTarget] = useState(0);
+  const [walkStep, setWalkStep] = useState(-1);
   const [tasks, setTasks] = useState<TrialTask[]>([]);
   const [events, setEvents] = useState<TrialEvent[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -77,6 +85,13 @@ export default function JKStoryPreview() {
     }, 220);
     return () => window.clearInterval(timer);
   }, [secretaryStep, secretaryTarget]);
+  useEffect(() => {
+    if (walkStep < 0) return;
+    const timer = window.setTimeout(() => {
+      setWalkStep((step) => step >= WALK_ROUTE.length - 1 ? -1 : step + 1);
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [walkStep]);
   function log(message: string) {
     setEvents((previous) => [{ id: crypto.randomUUID(), message, at: new Date().toISOString() }, ...previous].slice(0, 30));
   }
@@ -104,26 +119,31 @@ export default function JKStoryPreview() {
     );
   }, [map]);
   const actors = useMemo<ActorSnapshot[]>(
-    () => [{ name: "대표님", look: "office-tae", seat: { col: 21, row: 24 } },
+    () => [{ name: "대표님", look: "office-tae", seat: { col: 25, row: 28 } },
       ...[...STAFF, ...TEAM_MEMBERS].map((member, index) => ({
         name: member.name,
         look: member.look,
         seat: member.name === "JK 전담비서"
-          ? seats.find((seat) => seat.col === 11 && seat.row === 16)
+          ? seats.find((seat) => seat.col === 15 && seat.row === 20)
           : seats[index],
         secretary: member.name === "JK 전담비서",
       }))].map((member, index) => ({
       id: `jk-preview-${index}`,
       name: member.name,
       kind: "npc",
-      x: (("secretary" in member && member.secretary ? SECRETARY_ROUTE[secretaryStep][0] : member.seat?.col ?? 6 + index * 2) + 0.5) * 32,
-      y: (("secretary" in member && member.secretary ? SECRETARY_ROUTE[secretaryStep][1] : member.seat?.row ?? 7) + 0.5) * 32,
+      x: ((member.name === "운영 모니터" ? WALK_ROUTE[Math.max(walkStep, 0)][0] :
+        "secretary" in member && member.secretary ? SECRETARY_ROUTE[secretaryStep][0] + TERRACE_OFFSET :
+        member.seat?.col ?? 6 + index * 2) + 0.5) * 32,
+      y: ((member.name === "운영 모니터" ? WALK_ROUTE[Math.max(walkStep, 0)][1] :
+        "secretary" in member && member.secretary ? SECRETARY_ROUTE[secretaryStep][1] + TERRACE_OFFSET :
+        member.seat?.row ?? 7) + 0.5) * 32,
       direction: "down",
-      walking: "secretary" in member && member.secretary && secretaryStep !== secretaryTarget,
+      walking: ("secretary" in member && member.secretary && secretaryStep !== secretaryTarget) ||
+        (member.name === "운영 모니터" && walkStep >= 0),
       appearance: { officeLookId: member.look },
       phase: "idle",
     })),
-    [seats, secretaryStep, secretaryTarget],
+    [seats, secretaryStep, secretaryTarget, walkStep],
   );
 
   return (
@@ -155,9 +175,10 @@ export default function JKStoryPreview() {
         </aside>
         <main className="relative min-h-[520px] bg-[#eeeee7]" aria-label="JKSTORY 3D 사무실 지도">
           <ThreeMapPreview map={map} actors={actors} focus={focus} />
+          <button type="button" onClick={() => setWalkStep(0)} disabled={walkStep >= 0} className="absolute bottom-4 left-4 rounded-lg bg-[#345847] px-3 py-2 text-sm font-semibold text-white shadow-sm disabled:opacity-50">{walkStep >= 0 ? "직원 산책 중" : "직원 공원 산책 시연"}</button>
           <div className="pointer-events-none absolute left-4 top-4 rounded-lg border border-[#e3e2d9] bg-[#fffefa]/95 px-3 py-2 shadow-sm">
             <strong className="text-sm">{focus === "executive" ? "JKSTORY 대표실 · 운영 사무실과 연결" : "JKSTORY AI 협업실"}</strong>
-            <div className="text-xs text-[#67756c]">{focus === "executive" ? "앞쪽 중앙 대표실 · 운영 사무실에서 출입 가능" : "운영 사무실 · 회의 공간 · 대표실 · 직원 업무석"}</div>
+            <div className="text-xs text-[#67756c]">{focus === "executive" ? "앞쪽 중앙 대표실 · 운영 사무실에서 출입 가능" : "사방 테라스 공원 · 산책로 · 운영 사무실 · 대표실"}</div>
           </div>
         </main>
         <aside className="border-l border-[#e2e3dc] bg-[#fffefa] p-4">
