@@ -97,21 +97,8 @@ function surroundWithTerrace(map: TiledMap): TiledMap {
     object.x += TERRACE_OFFSET * 32;
     object.y += TERRACE_OFFSET * 32;
   }
-  const add = (type: string, col: number, row: number) => layer.objects!.push({
-    id: map.nextobjectid++, name: type, type,
-    x: col * 32, y: row * 32, width: 32, height: 32, visible: true,
-  });
-  // A clear walking loop lies at x=2/49 and y=2/35; planting stays at the rim.
-  for (let col = 5; col < width - 4; col += 6) {
-    add("plant", col, 1);
-    add("plant", col, height - 2);
-  }
-  for (let row = 6; row < height - 4; row += 6) {
-    add("plant", 1, row);
-    add("plant", width - 2, row);
-  }
-  for (const [col, row] of [[8, 3], [36, 3], [8, 34], [36, 34], [3, 8], [47, 28]])
-    add("office_sofa", col, row);
+  // Landscape geometry is rendered by the trading scene as trees, lawns and
+  // outdoor benches; office furniture does not belong on the terrace.
   const zones = layer.properties?.find((property) => property.name === "ambientZones");
   if (zones && typeof zones.value === "string") {
     zones.value = JSON.stringify([
