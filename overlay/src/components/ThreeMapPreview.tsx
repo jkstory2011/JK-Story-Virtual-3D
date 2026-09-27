@@ -11,6 +11,7 @@ export default function ThreeMapPreview({ map, actors = [], focus = "overview" }
   const host = useRef<HTMLDivElement>(null),
     labels = useRef<HTMLDivElement>(null);
   const viewRef = useRef<OfficeRenderer | null>(null);
+  const actorsRef = useRef(actors);
   const [failed, setFailed] = useState(false);
   const t = useT();
   useEffect(() => {
@@ -29,12 +30,15 @@ export default function ThreeMapPreview({ map, actors = [], focus = "overview" }
     };
   }, []);
   useEffect(() => {
+    actorsRef.current = actors;
+  }, [actors]);
+  useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
     const snapshot = tiledSnapshot(map);
     const blocked = new Set(snapshot.blocked);
     view.attach({
-      actors: () => actors,
+      actors: () => actorsRef.current,
       mapKey: () => `jkstory-preview-${map.width}x${map.height}`,
       map: () => snapshot,
       editor: () => ({ placement: false, spawn: false, owner: false, tiled: true, seatLabels: [] }),
@@ -44,7 +48,7 @@ export default function ThreeMapPreview({ map, actors = [], focus = "overview" }
         x >= 0 && x < map.width && y >= 0 && y < map.height && !blocked.has(`${x},${y}`),
     });
     view.overview(map.width, map.height);
-  }, [map, actors]);
+  }, [map]);
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
