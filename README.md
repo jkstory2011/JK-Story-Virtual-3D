@@ -27,11 +27,11 @@ git clone https://github.com/jkstory2011/JK-Story-Virtual-3D.git
 cd JK-Story-Virtual-3D
 ```
 
-3. `G:\JKStory\JK-Story-Virtual-3D\start-preview.cmd`를 더블클릭합니다. 최신 코드 받기, 최초 설치, 로컬 DB 준비, 서버 실행을 처리하며 서버가 준비되면 브라우저를 엽니다. 처음 실행은 설치 시간이 걸립니다.
+3. 처음 한 번 `G:\JKStory\JK-Story-Virtual-3D\start-preview.cmd`를 더블클릭합니다. 최신 코드 받기, 최초 설치, 로컬 DB 준비, 서버 실행을 처리하며 서버가 준비되면 브라우저를 엽니다. 처음 실행은 설치 시간이 걸립니다. 실행 중 바탕화면과 시작 메뉴에 **JK Story Virtual 3D** 바로가기도 자동으로 만듭니다. 이후에는 이 바로가기를 더블클릭하면 됩니다.
 
 이미 `C:\JKStory\JK-Story-Virtual-3D`에 설치했다면 실행 창을 닫고 파일 탐색기에서 `JK-Story-Virtual-3D` 폴더 전체를 `G:\JKStory\`로 이동한 뒤 G: 드라이브의 `start-preview.cmd`를 실행합니다. 시작 파일과 설치 스크립트는 자신의 위치를 기준으로 경로를 찾으므로 코드 수정은 필요하지 않습니다. 다만 업무판 시험 기록은 브라우저에 저장되어 Windows를 재설치하면 사라질 수 있습니다.
 
-화면 주소는 `http://localhost:3000/jkstory-preview`입니다. 실행 창을 열어 둔 동안만 접속됩니다. 중지하려면 실행 창에서 `Ctrl+C`를 누릅니다. GitHub에 수정된 코드를 반영한 뒤에는 실행 창을 닫고 `start-preview.cmd`를 다시 더블클릭하면 최신 버전을 받을 수 있습니다. 사용 중인 시험 업무 기록은 같은 브라우저의 로컬 저장소에 남습니다.
+화면 주소는 `http://localhost:3000/jkstory-preview`입니다. 실행 창을 열어 둔 동안만 접속됩니다. 중지하려면 실행 창에서 `Ctrl+C`를 누릅니다. GitHub에 수정된 코드를 반영한 뒤에는 실행 창을 닫고 바탕화면의 **JK Story Virtual 3D** 바로가기를 더블클릭하면 최신 버전을 받을 수 있습니다. 이미 서버가 실행 중이라면 같은 바로가기는 브라우저만 엽니다. 사용 중인 시험 업무 기록은 같은 브라우저의 로컬 저장소에 남습니다.
 
 브라우저에서 연결할 수 없다고 나오면 실행 창에 `Dev server ready on http://localhost:3000`이 표시되었는지 확인하고 `http://127.0.0.1:3000/jkstory-preview`로 다시 접속하세요. `Could not start the office` 또는 `EADDRINUSE` 같은 오류가 보이면 실행 창 마지막 부분을 캡처해 주세요.
 
