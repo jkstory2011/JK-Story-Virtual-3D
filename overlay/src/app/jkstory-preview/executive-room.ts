@@ -9,7 +9,7 @@ export function buildJKStoryOffice(): TiledMap {
   const floor = map.layers.find((layer) => layer.name === "Floor")!;
   const collision = map.layers.find((layer) => layer.name === "Collision")!;
   const objects = map.layers.find((layer) => layer.name === "Objects")!;
-  for (let row = 19; row <= 28; row++) {
+  for (let row = 19; row <= 29; row++) {
     for (let col = 18; col <= 25; col++) {
       const index = row * map.width + col;
       floor.data![index] = 1;
