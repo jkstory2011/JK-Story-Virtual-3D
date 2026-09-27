@@ -37,8 +37,12 @@ try {
     captureBeyondViewport: false,
   });
   await writeFile("test-results/jkstory-preview.png", Buffer.from(capture.data, "base64"));
+  await page.locator("canvas").first().evaluate((element) => element.setAttribute("data-preview-test-id", "persistent"));
   await page.getByRole("button", { name: "대표실" }).click();
   await page.getByText("JKSTORY 대표실").waitFor();
+  if (await page.locator("canvas").first().getAttribute("data-preview-test-id") !== "persistent") {
+    throw new Error("Room switching recreated the WebGL canvas.");
+  }
   await page.waitForTimeout(1200);
   const suite = await cdp.send("Page.captureScreenshot", {
     format: "png",
