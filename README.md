@@ -16,7 +16,7 @@ DeskRPG의 실제 3D 지도와 캐릭터 렌더러를 기반으로 만드는 JKS
 ## Windows PC에서 로컬 시험
 
 1. [Node.js 22 LTS](https://nodejs.org/en/download)와 [Git for Windows](https://git-scm.com/install/windows)를 설치하고 **명령 프롬프트를 새로 엽니다**.
-2. 다음 명령을 명령 프롬프트(CMD)에 한 줄씩 입력합니다. `C:\JKStory` 폴더가 만들어지며, 긴 경로 문제를 줄이기 위해 이 위치를 사용합니다.
+2. 처음 한 번만 아래 명령으로 저장소를 받습니다. `C:\JKStory` 폴더를 사용해 긴 경로 문제를 줄입니다.
 
 ```bat
 cd /d C:\
@@ -24,13 +24,11 @@ mkdir JKStory
 cd JKStory
 git clone https://github.com/jkstory2011/JK-Story-Virtual-3D.git
 cd JK-Story-Virtual-3D
-scripts\bootstrap.cmd
-cd .runtime\deskrpg
-npm run setup:lite
-node --import tsx dev-server.ts
 ```
 
-`Dev server ready on http://localhost:3000`이 표시되면 **명령 창을 닫지 않은 채** Chrome 주소창에 `http://localhost:3000/jkstory-preview`를 입력합니다. 중지하려면 명령 창에서 `Ctrl+C`를 누릅니다. 다음에 다시 실행할 때는 `C:\JKStory\JK-Story-Virtual-3D\.runtime\deskrpg`에서 마지막 `node --import tsx dev-server.ts` 명령만 실행합니다.
+3. `C:\JKStory\JK-Story-Virtual-3D\start-preview.cmd`를 더블클릭합니다. 최신 코드 받기, 최초 설치, 로컬 DB 준비, 서버 실행과 브라우저 열기를 처리합니다. 처음 실행은 설치 시간이 걸립니다. 브라우저가 서버보다 먼저 열려 오류가 보이면 몇 초 뒤 새로고침하세요.
+
+화면 주소는 `http://localhost:3000/jkstory-preview`입니다. 실행 창을 열어 둔 동안만 접속됩니다. 중지하려면 실행 창에서 `Ctrl+C`를 누릅니다. GitHub에 수정된 코드를 반영한 뒤에는 실행 창을 닫고 `start-preview.cmd`를 다시 더블클릭하면 최신 버전을 받을 수 있습니다. 사용 중인 시험 업무 기록은 같은 브라우저의 로컬 저장소에 남습니다.
 
 ## Linux/macOS/WSL에서 로컬 시험
 
