@@ -6,6 +6,8 @@ DeskRPG의 실제 3D 지도와 캐릭터 렌더러를 기반으로 만드는 JKS
 
 - `/jkstory-preview`: 종합상사 3D 지도와 Codex·Claude Code·Hermes 캐릭터의 시험 배치
 - 직원별 담당 역할 표시, 원본 지도 확대·회전
+- 시험운영 업무판: 업무 등록, 담당 AI 선택, 대기·진행·검토·완료 상태 변경, 변경 기록
+- 업무와 기록은 이 브라우저에만 보관됩니다. 실제 AI 실행이나 기기 간 동기화는 지원하지 않으며 고객 정보 입력은 피하세요.
 - 업무 시스템과 분리된 공개 시연 화면. 실제 에이전트 로그인이나 업무 실행은 아직 연결되지 않았습니다.
 
 ## Windows PC에서 로컬 시험
@@ -50,7 +52,7 @@ node --import tsx dev-server.ts
 
 - TypeScript 검사 통과
 - `/jkstory-preview` HTTP 200 확인
-- 브라우저 WebGL 렌더링과 캐릭터 동작은 아직 실제 브라우저에서 검증되지 않았습니다.
+- Windows GitHub Actions의 Chromium 브라우저에서 WebGL 렌더링을 확인하고 [화면 캡처](screenshots/jkstory-preview.png)를 저장했습니다.
 - Codex와 Claude Code 구독 계정을 Hermes의 모델 제공자로 직접 연결했다고 주장하지 않습니다.
 
-다음 단계는 시험 서버에 배포하여 WebGL 화면, 캐릭터 좌석, 로그인, Hermes 프로필 및 작업 흐름을 각각 검증하는 것입니다.
+개인정보가 없는 가상 업무로 업무 등록 → 담당 선택 → 상태 변경 → 새로고침 뒤 기록 유지 여부를 확인합니다. 다음 단계는 실제 에이전트 연결과 공용 데이터 저장소입니다.
