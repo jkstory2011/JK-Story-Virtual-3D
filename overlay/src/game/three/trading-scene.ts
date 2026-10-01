@@ -13,9 +13,35 @@ export function isTradingMap(map: Pick<MapSnapshot, "environment" | "environment
 export function jkstoryTerraceTile(x: number, z: number, cols: number, rows: number): "garden" | "path" | "office" {
   if (cols !== 52 || rows !== 38 || (x >= 4 && x < cols - 4 && z >= 4 && z < rows - 4))
     return "office";
-  return x === 2 || x === cols - 3 || z === 2 || z === rows - 3 ? "path" : "garden";
+  const entrancePath =
+    (x >= 24 && x <= 25 && z < 4) ||
+    (x >= 40 && x <= 42 && z >= rows - 4) ||
+    (z >= 16 && z <= 17 && (x < 4 || x >= cols - 4));
+  return entrancePath || x === 2 || x === cols - 3 || z === 2 || z === rows - 3
+    ? "path" : "garden";
 }
 export function tradingFrameRuns(map: Pick<MapSnapshot, "floor">): FrameRun[] {
+  if (map.floor.length === 38 && map.floor[0]?.length === 52) {
+    // The garden is outside the original 44 x 30 office footprint. Keep a
+    // low safety rail at the terrace edge and put the glazed facade at the
+    // office edge, with real openings onto all four walking paths.
+    const facade = 2.85;
+    const rail = 1.05;
+    return [
+      { x1: 0.5, z1: 0.5, x2: 51.5, z2: 0.5, height: rail },
+      { x1: 0.5, z1: 37.5, x2: 51.5, z2: 37.5, height: rail },
+      { x1: 0.5, z1: 0.5, x2: 0.5, z2: 37.5, height: rail },
+      { x1: 51.5, z1: 0.5, x2: 51.5, z2: 37.5, height: rail },
+      { x1: 4.5, z1: 4.5, x2: 24, z2: 4.5, height: facade },
+      { x1: 26, z1: 4.5, x2: 47.5, z2: 4.5, height: facade },
+      { x1: 4.5, z1: 33.5, x2: 40, z2: 33.5, height: facade },
+      { x1: 43, z1: 33.5, x2: 47.5, z2: 33.5, height: facade },
+      { x1: 4.5, z1: 4.5, x2: 4.5, z2: 16, height: facade },
+      { x1: 4.5, z1: 18, x2: 4.5, z2: 33.5, height: facade },
+      { x1: 47.5, z1: 4.5, x2: 47.5, z2: 16, height: facade },
+      { x1: 47.5, z1: 18, x2: 47.5, z2: 33.5, height: facade },
+    ];
+  }
   const runs: FrameRun[] = [];
   for (const contour of floorContours(map.floor)) {
     const p = insetContour(contour, 0.5);
@@ -119,7 +145,7 @@ export function addTradingArchitecture(root: T.Group, map: MapSnapshot) {
   // Back-wall mural is scene-owned, with readiness observed before capture/batching.
   const mural = new T.Group();
   mural.name = "trading-world-mural";
-  mural.position.set(map.cols / 2, 0, 0.61);
+  mural.position.set(map.cols / 2, 0, map.cols === 52 && map.rows === 38 ? 4.61 : 0.61);
   group.add(mural);
   round(mural, 9.8, 2.9, 0.14, "#ede7da", 0, 1.55, 0, 0.012);
   mural.userData.assetStatus = "loading";
