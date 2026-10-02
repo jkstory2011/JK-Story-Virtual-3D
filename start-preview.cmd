@@ -28,9 +28,9 @@ if not exist ".runtime\deskrpg\node_modules" (
 
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\is-preview-running.ps1" >nul 2>nul
 if not errorlevel 1 (
-  echo [JKSTORY] The updated office is already running. Opening the browser.
-  start "" "http://127.0.0.1:3000/jkstory-preview"
-  exit /b 0
+  echo [JKSTORY] Restarting the running office to apply the new 3D files...
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\stop-preview.ps1"
+  if errorlevel 1 goto failed
 )
 
 cd /d ".runtime\deskrpg"
