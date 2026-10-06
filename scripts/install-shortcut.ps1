@@ -31,7 +31,9 @@ $startup = [Environment]::GetFolderPath('Startup')
 if ([string]::IsNullOrWhiteSpace($startup)) { throw 'Windows Startup folder is unavailable.' }
 if (-not (Test-Path -LiteralPath $startup)) { New-Item -ItemType Directory -Path $startup -Force | Out-Null }
 $startupLink = $shell.CreateShortcut((Join-Path $startup 'JK Story Virtual 3D.lnk'))
-$startupLink.TargetPath = $launcher
+$localLauncher = Join-Path $ProjectDir 'start-local.cmd'
+if (-not (Test-Path -LiteralPath $localLauncher)) { throw "Auto-start launcher not found: $localLauncher" }
+$startupLink.TargetPath = $localLauncher
 $startupLink.WorkingDirectory = $ProjectDir
 $startupLink.WindowStyle = 7
 $startupLink.Description = 'JKSTORY 3D 사무실 자동 시작'
