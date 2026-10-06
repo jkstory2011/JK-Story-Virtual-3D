@@ -153,7 +153,8 @@ export default function JKStoryPreview() {
           <h1 className="text-lg font-bold">JK Story Virtual 3D</h1>
           <p className="text-sm text-[#637169]">DeskRPG 기반 AI 사무실 · 시험 배치</p>
         </div>
-        <nav className="flex gap-2" aria-label="사무실 공간 선택">
+        <nav className="flex flex-wrap gap-2" aria-label="사무실 공간 선택">
+          <a href="/jkstory-preview/bpms" className="rounded-lg bg-[#d9e9df] px-3 py-2 text-sm font-semibold text-[#244b37]">BPMS 개발실 열기</a>
           <button type="button" onClick={() => setFocus("overview")} aria-pressed={focus === "overview"} className={`rounded-lg px-3 py-2 text-sm ${focus === "overview" ? "bg-[#345847] text-white" : "bg-[#e7efe9] text-[#345847]"}`}>운영 사무실 전체</button>
           <button type="button" onClick={() => setFocus("executive")} aria-pressed={focus === "executive"} className={`rounded-lg px-3 py-2 text-sm ${focus === "executive" ? "bg-[#345847] text-white" : "bg-[#e7efe9] text-[#345847]"}`}>대표실로 이동</button>
         </nav>
