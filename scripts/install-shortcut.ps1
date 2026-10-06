@@ -26,4 +26,13 @@ foreach ($location in $locations) {
   $shortcut.Description = 'JKSTORY 3D 사무실 실행 및 최신 버전 확인'
   $shortcut.Save()
 }
-Write-Host '[JKSTORY] Desktop and Start menu shortcuts are ready.'
+# Start the local preview automatically for this Windows user after sign-in.
+$startup = [Environment]::GetFolderPath('Startup')
+if ([string]::IsNullOrWhiteSpace($startup)) { throw 'Windows Startup folder is unavailable.' }
+$startupLink = $shell.CreateShortcut((Join-Path $startup 'JK Story Virtual 3D.lnk'))
+$startupLink.TargetPath = $launcher
+$startupLink.WorkingDirectory = $ProjectDir
+$startupLink.WindowStyle = 7
+$startupLink.Description = 'JKSTORY 3D 사무실 자동 시작'
+$startupLink.Save()
+Write-Host '[JKSTORY] Desktop, Start menu, and Windows sign-in startup shortcuts are ready.'
