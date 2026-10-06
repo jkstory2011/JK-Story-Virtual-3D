@@ -29,6 +29,7 @@ foreach ($location in $locations) {
 # Start the local preview automatically for this Windows user after sign-in.
 $startup = [Environment]::GetFolderPath('Startup')
 if ([string]::IsNullOrWhiteSpace($startup)) { throw 'Windows Startup folder is unavailable.' }
+if (-not (Test-Path -LiteralPath $startup)) { New-Item -ItemType Directory -Path $startup -Force | Out-Null }
 $startupLink = $shell.CreateShortcut((Join-Path $startup 'JK Story Virtual 3D.lnk'))
 $startupLink.TargetPath = $launcher
 $startupLink.WorkingDirectory = $ProjectDir
